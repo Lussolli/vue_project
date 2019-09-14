@@ -1,0 +1,29 @@
+{
+  "alunos": [
+    {
+      "nome": "Susan",
+      "sobrenome": "",
+      "id": 1
+    },
+    {
+      "nome": "Henrique",
+      "sobrenome": "",
+      "id": 2
+    },
+    {
+      "nome": "André Alves",
+      "sobrenome": "",
+      "id": 3
+    },
+    {
+      "nome": "André Vieira",
+      "sobrenome": "",
+      "id": 4
+    },
+    {
+      "nome": "Eduardo",
+      "sobrenome": "",
+      "id": 5
+    }
+  ]
+}
