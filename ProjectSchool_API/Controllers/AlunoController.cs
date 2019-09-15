@@ -1,4 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProjectSchool_API.Data;
+using ProjectSchool_API.Models;
 
 namespace ProjectSchool_API.Controllers
 {
@@ -6,39 +11,121 @@ namespace ProjectSchool_API.Controllers
     [ApiController]
     public class AlunoController : ControllerBase
     {
-        public AlunoController()
+        public IRepository _repo { get; }
+        public AlunoController(IRepository repo)
         {
-            
+            _repo = repo;
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            return Ok();
+            try
+            {
+                var result = await _repo.GetAllAlunosAsync(true);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
         }
 
         [HttpGet("{alunoId}")]
-        public IActionResult Get(int alunoId)
+        public async Task<IActionResult> Get(int alunoId)
         {
-            return Ok();
+            try
+            {
+                var result = await _repo.GetAlunoAsyncById(alunoId, true);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
+        }
+
+        [HttpGet("ByProfessor/{professorId}")]
+        public async Task<IActionResult> GetByProfessorId(int professorId)
+        {
+            try
+            {
+                var result = await _repo.GetAlunosAsyncByProfessorId(professorId, true);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
         }
 
         [HttpPost]
-        public IActionResult Post()
+        public async Task<IActionResult> Post(Aluno model)
         {
-            return Ok();
+            try
+            {
+                _repo.Add(model);
+                if (await _repo.SaveChangesAsync())
+                {
+                    return Created($"/api/aluno/{model.Id}", model);
+                }
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
+
+            return BadRequest();
         }
 
         [HttpPut("{alunoId}")]
-        public IActionResult Put(int alunoId)
+        public async Task<IActionResult> Put(int alunoId, Aluno model)
         {
-            return Ok();
+            try
+            {
+                var aluno = await _repo.GetAlunoAsyncById(alunoId, false);
+
+                if (aluno == null)
+                    return NotFound();
+
+                _repo.Update(model);
+                if (await _repo.SaveChangesAsync())
+                {
+                    aluno = await _repo.GetAlunoAsyncById(alunoId, true);
+                    return Created($"/api/aluno/{model.Id}", aluno);
+                }
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
         }
 
         [HttpDelete("{alunoId}")]
-        public IActionResult Delete(int alunoId)
+        public async Task<IActionResult> Delete(int alunoId)
         {
-            return Ok();
+            try
+            {
+                var aluno = await _repo.GetAlunoAsyncById(alunoId, false);
+
+                if (aluno == null)
+                    return NotFound();
+
+                _repo.Delete(aluno);
+                if (await _repo.SaveChangesAsync())
+                {
+                    return Ok();
+                }
+
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Banco de dados falhou");
+            }
         }
     }
 }
