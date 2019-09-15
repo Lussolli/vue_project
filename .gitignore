@@ -19,3 +19,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Arquivos do .Net Core e EF Core.
+bin
+obj
