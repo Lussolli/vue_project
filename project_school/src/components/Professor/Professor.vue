@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Titulo texto="Professores" />
+    <Titulo texto="Professores" :btnVoltar="true"/>
     <table>
       <thead>
         <th>Cód.</th>
@@ -15,7 +15,11 @@
         </tr>
       </tbody>
       <tfoot v-else>
-        Nenhum professor encontrado.
+        <tr>
+          <td colspan="3" style="text-align: center;">
+            Nenhum professor encontrado.
+          </td>
+        </tr>
       </tfoot>
     </table>
   </div>
@@ -48,7 +52,7 @@ export default {
     },
     carregarProfessores() {
       this.$http
-      .get('http://localhost:3000/professores')
+      .get('http://localhost:5000/api/professor')
       .then(resposta => {
         this.professores = resposta.body;
         this.pegarQtdAlunosPorProfessor();
@@ -57,7 +61,7 @@ export default {
   },
   created() {
     this.$http
-      .get('http://localhost:3000/alunos')
+      .get('http://localhost:5000/api/aluno')
       .then(resposta => {
         this.alunos = resposta.body;
         this.carregarProfessores();

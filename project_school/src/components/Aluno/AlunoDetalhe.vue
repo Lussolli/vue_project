@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!loading">
     <Titulo :texto="`Aluno: ${aluno.nome}`" :btnVoltar="!visualizando">
       <button v-show="visualizando" type="button" @click="editar" class="btn btnEditar">Editar</button>
     </Titulo>
@@ -36,9 +36,9 @@
           <td class="colPequeno">Professor:</td>
           <td>
             <label v-if="visualizando">{{ aluno.professor.nome }}</label>
-            <select v-else v-model="aluno.professor">
+            <select v-else v-model="aluno.professor.id">
               <option v-for="(professor, index) in professores" 
-              :key="index" :value="professor">
+              :key="index" :value="professor.id">
                 {{ professor.nome }}
               </option>
             </select>
@@ -68,7 +68,8 @@ export default {
       professores: [],
       aluno: {},
       idAluno: this.$route.params.id,
-      visualizando: true
+      visualizando: true,
+      loading: true
     }
   },
   methods: {
@@ -81,30 +82,36 @@ export default {
         nome: this.aluno.nome,
         sobrenome: this.aluno.sobrenome,
         dataNascimento: this.aluno.dataNascimento,
-        professor: this.aluno.professor
+        professorId: this.aluno.professor.id
       }
       
       this.$http
-        .put('http://localhost:3000/alunos/' + _alunoEditar.id, 
+        .put('http://localhost:5000/api/aluno/' + _alunoEditar.id, 
         _alunoEditar);
       this.editar();
     },
     cancelar() {
       this.visualizando = !this.visualizando;
+    },
+    carregarProfessor() {
+      this.$http
+      .get('http://localhost:5000/api/professor')
+      .then(resposta => {
+        this.professores = resposta.body;
+        this.carregarAluno();
+      });
+    },
+    carregarAluno() {
+      this.$http
+      .get('http://localhost:5000/api/aluno/' + this.idAluno)
+      .then(resposta => {
+        this.aluno = resposta.body;
+        this.loading = false;
+      });
     }
   },
   created() {
-    this.$http
-      .get('http://localhost:3000/alunos/' + this.idAluno)
-      .then(resposta => {
-        this.aluno = resposta.body;
-      });
-      
-    this.$http
-      .get('http://localhost:3000/professores')
-      .then(resposta => {
-        this.professores = resposta.body;
-      });
+    this.carregarProfessor();
   }
 }
 </script>
