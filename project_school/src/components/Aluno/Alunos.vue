@@ -1,7 +1,7 @@
 <template>
   <div>
-    <Titulo :texto="titulo" />
-    <div>
+    <Titulo :texto="professorId != undefined ? 'Professor: ' + professor.nome : titulo" />
+    <div v-if="professorId != undefined">
       <input type="text" placeholder="Nome do aluno" v-model="nome" @keyup.enter="addAluno">
       <button type="button" class="btn btnInput" @click="addAluno">Adicionar</button>
     </div>
@@ -14,9 +14,11 @@
       </thead>
       <tbody v-if="alunos.length">
         <tr v-for="(aluno, index) in alunos" :key="index">
-          <td>{{ aluno.id }}</td>
-          <td>{{ aluno.nome + ' ' + aluno.sobrenome }}</td>
-          <td>
+          <td class="colPequeno">{{ aluno.id }}</td>
+          <router-link tag="td" :to="'/alunodetalhe/' + aluno.id" style="cursor: pointer;">
+            {{ aluno.nome + ' ' + aluno.sobrenome }}
+          </router-link>
+          <td class="colPequeno">
             <button type="button" class="btn btn_Danger" @click="remover(aluno)">
               Remover
             </button>
@@ -42,7 +44,9 @@ export default {
   },
   data() {
     return {
-      titulo: 'Aluno',
+      titulo: 'Todos os alunos',
+      professorId: this.$route.params.prof_id,
+      professor: {},
       nome: '',
       alunos: []
     }
@@ -59,7 +63,11 @@ export default {
     addAluno() {
       let _aluno = {
         nome: this.nome,
-        sobrenome: ''
+        sobrenome: '',
+        professor: {
+          id: this.professor.id,
+          nome: this.professor.nome
+        }
       };
       
       this.$http
@@ -69,25 +77,41 @@ export default {
         });
       
       this.nome = '';
+    },
+    carregarProfessores() {
+      this.$http
+      .get('http://localhost:3000/professores/' + this.professorId)
+      .then(resposta => {
+        this.professor = resposta.body;
+      });
     }
   },
   created() {
-    this.$http
-      .get('http://localhost:3000/alunos')
-      .then(resposta => {
-        this.alunos = resposta.body;
-      });
+    if (this.professorId) {
+      this.carregarProfessores();
+      this.$http
+        .get('http://localhost:3000/alunos?professor.id=' + this.professorId)
+        .then(resposta => {
+          this.alunos = resposta.body;
+        });
+    } else {
+      this.$http
+        .get('http://localhost:3000/alunos')
+        .then(resposta => {
+          this.alunos = resposta.body;
+        });
+    }
   }
 }
 </script>
 
 <style scoped>
 input {
+  width: calc(100% - 195px);
   border: 0;
   padding: 20px;
   font-size: 1.3em;
   color: #687f7f;
-  display: inline;
 }
 
 .btnInput {
@@ -95,7 +119,6 @@ input {
   border: 0px;
   padding: 20px;
   font-size: 1.3em;
-  display: inline;
   background-color: rgb(116, 115, 115);
 }
 
